@@ -1,0 +1,928 @@
+{
+  "info": {
+    "name": "Parkir Management System",
+    "_postman_id": "parkir-management-system-v1",
+    "description": "Collection lengkap untuk testing API Parking Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "member_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "staff_id",
+      "value": "2",
+      "type": "string"
+    },
+    {
+      "key": "invoice_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "qr_token_nonmember",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "qr_token_member",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Login Super Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.token) {",
+                  "    pm.collectionVariables.set('token', json.data.token);",
+                  "    console.log('Token saved:', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@parkir.com\",\n    \"password\": \"password\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Petugas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.token) {",
+                  "    pm.collectionVariables.set('token', json.data.token);",
+                  "    console.log('Token saved:', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"petugas1@parkir.com\",\n    \"password\": \"password\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] }
+          }
+        },
+        {
+          "name": "Forgot Password (Email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"identifier\": \"admin@parkir.com\",\n    \"channel\": \"email\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/forgot-password", "host": ["{{base_url}}"], "path": ["auth", "forgot-password"] }
+          }
+        },
+        {
+          "name": "Forgot Password (WhatsApp)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"identifier\": \"081200000001\",\n    \"channel\": \"whatsapp\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/forgot-password", "host": ["{{base_url}}"], "path": ["auth", "forgot-password"] }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.reset_token) {",
+                  "    pm.collectionVariables.set('reset_token', json.data.reset_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"identifier\": \"admin@parkir.com\",\n    \"otp\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/verify-otp", "host": ["{{base_url}}"], "path": ["auth", "verify-otp"] }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"identifier\": \"admin@parkir.com\",\n    \"reset_token\": \"{{reset_token}}\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/reset-password", "host": ["{{base_url}}"], "path": ["auth", "reset-password"] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"current_password\": \"password\",\n    \"password\": \"newpassword123\",\n    \"password_confirmation\": \"newpassword123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/change-password", "host": ["{{base_url}}"], "path": ["auth", "change-password"] }
+          }
+        },
+        {
+          "name": "[SECURITY] Akses tanpa token → 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "[SECURITY] Login salah password → 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@parkir.com\",\n    \"password\": \"wrongpassword\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Staff Management (Super Admin)",
+      "item": [
+        {
+          "name": "Daftar Petugas",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/staff", "host": ["{{base_url}}"], "path": ["admin", "staff"] }
+          }
+        },
+        {
+          "name": "Tambah Petugas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "    pm.collectionVariables.set('staff_id', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Petugas Baru\",\n    \"email\": \"petugas.baru@parkir.com\",\n    \"phone\": \"081299999999\",\n    \"password\": \"password\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/admin/staff", "host": ["{{base_url}}"], "path": ["admin", "staff"] }
+          }
+        },
+        {
+          "name": "Detail Petugas",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/staff/{{staff_id}}", "host": ["{{base_url}}"], "path": ["admin", "staff", "{{staff_id}}"] }
+          }
+        },
+        {
+          "name": "Edit Petugas",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Petugas Baru Updated\",\n    \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/admin/staff/{{staff_id}}", "host": ["{{base_url}}"], "path": ["admin", "staff", "{{staff_id}}"] }
+          }
+        },
+        {
+          "name": "Nonaktifkan Petugas",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/staff/{{staff_id}}", "host": ["{{base_url}}"], "path": ["admin", "staff", "{{staff_id}}"] }
+          }
+        },
+        {
+          "name": "[SECURITY] Petugas akses endpoint admin → 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/staff", "host": ["{{base_url}}"], "path": ["admin", "staff"] }
+          }
+        },
+        {
+          "name": "[SECURITY] Email duplikat → 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Duplikat\",\n    \"email\": \"petugas1@parkir.com\",\n    \"phone\": \"089999999999\",\n    \"password\": \"password\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/admin/staff", "host": ["{{base_url}}"], "path": ["admin", "staff"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Member Management (Petugas)",
+      "item": [
+        {
+          "name": "Daftar Member",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/staff/members?search=&status=",
+              "host": ["{{base_url}}"],
+              "path": ["staff", "members"],
+              "query": [
+                { "key": "search", "value": "", "description": "Cari nama/phone/kode" },
+                { "key": "status", "value": "", "description": "paid atau unpaid" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Tambah Member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "    pm.collectionVariables.set('member_id', json.data.id);",
+                  "    pm.collectionVariables.set('qr_token_member', json.data.qr_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Budi Santoso\",\n    \"phone\": \"081300000001\",\n    \"notes\": \"Member reguler\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/members", "host": ["{{base_url}}"], "path": ["staff", "members"] }
+          }
+        },
+        {
+          "name": "Detail Member",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/staff/members/{{member_id}}", "host": ["{{base_url}}"], "path": ["staff", "members", "{{member_id}}"] }
+          }
+        },
+        {
+          "name": "Edit Member",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Budi Santoso Updated\",\n    \"notes\": \"Member VIP\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/members/{{member_id}}", "host": ["{{base_url}}"], "path": ["staff", "members", "{{member_id}}"] }
+          }
+        },
+        {
+          "name": "Hapus Member",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/staff/members/{{member_id}}", "host": ["{{base_url}}"], "path": ["staff", "members", "{{member_id}}"] }
+          }
+        },
+        {
+          "name": "Bayar Registrasi Member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "    pm.collectionVariables.set('payment_id', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"payment_type\": \"registration\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/members/{{member_id}}/payments", "host": ["{{base_url}}"], "path": ["staff", "members", "{{member_id}}", "payments"] }
+          }
+        },
+        {
+          "name": "Perpanjangan Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"payment_type\": \"renewal\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/members/{{member_id}}/payments", "host": ["{{base_url}}"], "path": ["staff", "members", "{{member_id}}", "payments"] }
+          }
+        },
+        {
+          "name": "Riwayat Pembayaran Member",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/staff/members/{{member_id}}/payments", "host": ["{{base_url}}"], "path": ["staff", "members", "{{member_id}}", "payments"] }
+          }
+        },
+        {
+          "name": "Data Kartu Member (JSON)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/staff/members/{{member_id}}/card", "host": ["{{base_url}}"], "path": ["staff", "members", "{{member_id}}", "card"] }
+          }
+        },
+        {
+          "name": "Download Kartu Member (PDF)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/staff/members/{{member_id}}/card/pdf", "host": ["{{base_url}}"], "path": ["staff", "members", "{{member_id}}", "card", "pdf"] }
+          }
+        },
+        {
+          "name": "[SECURITY] Bayar duplikat → 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"payment_type\": \"registration\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/members/{{member_id}}/payments", "host": ["{{base_url}}"], "path": ["staff", "members", "{{member_id}}", "payments"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Public Parking (Non-Member)",
+      "item": [
+        {
+          "name": "Ambil Tiket Parkir",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.qr_token) {",
+                  "    pm.collectionVariables.set('qr_token_nonmember', json.data.qr_token);",
+                  "    console.log('QR Token saved:', json.data.qr_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/public/parking/tickets", "host": ["{{base_url}}"], "path": ["public", "parking", "tickets"] }
+          }
+        },
+        {
+          "name": "Scan Masuk Member (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"qr_token\": \"{{qr_token_member}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/public/parking/member/entry", "host": ["{{base_url}}"], "path": ["public", "parking", "member", "entry"] }
+          }
+        },
+        {
+          "name": "[SECURITY] Scan masuk member dua kali → 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"qr_token\": \"{{qr_token_member}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/public/parking/member/entry", "host": ["{{base_url}}"], "path": ["public", "parking", "member", "entry"] }
+          }
+        },
+        {
+          "name": "[SECURITY] QR tidak valid → 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"qr_token\": \"token-tidak-valid-sama-sekali\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/public/parking/member/entry", "host": ["{{base_url}}"], "path": ["public", "parking", "member", "entry"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Parking Transaction (Petugas)",
+      "item": [
+        {
+          "name": "Scan QR (cek sebelum keluar) - Non-Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"qr_token\": \"{{qr_token_nonmember}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/parking/scan", "host": ["{{base_url}}"], "path": ["staff", "parking", "scan"] }
+          }
+        },
+        {
+          "name": "Scan QR (cek sebelum keluar) - Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"qr_token\": \"{{qr_token_member}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/parking/scan", "host": ["{{base_url}}"], "path": ["staff", "parking", "scan"] }
+          }
+        },
+        {
+          "name": "Proses Keluar - Non-Member (Motor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "    pm.collectionVariables.set('transaction_id', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"qr_token\": \"{{qr_token_nonmember}}\",\n    \"vehicle_type\": \"motor\",\n    \"plate_number\": \"B 1234 ABC\",\n    \"stnk_verified\": true,\n    \"notes\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/parking/exit", "host": ["{{base_url}}"], "path": ["staff", "parking", "exit"] }
+          }
+        },
+        {
+          "name": "Proses Keluar - Non-Member (Mobil)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"qr_token\": \"{{qr_token_nonmember}}\",\n    \"vehicle_type\": \"mobil\",\n    \"plate_number\": \"D 5678 XYZ\",\n    \"stnk_verified\": true,\n    \"notes\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/parking/exit", "host": ["{{base_url}}"], "path": ["staff", "parking", "exit"] }
+          }
+        },
+        {
+          "name": "Proses Keluar - Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"qr_token\": \"{{qr_token_member}}\",\n    \"vehicle_type\": \"motor\",\n    \"plate_number\": \"B 9999 MBR\",\n    \"stnk_verified\": true,\n    \"notes\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/parking/exit", "host": ["{{base_url}}"], "path": ["staff", "parking", "exit"] }
+          }
+        },
+        {
+          "name": "[SECURITY] Keluar dua kali dengan tiket sama → 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"qr_token\": \"{{qr_token_nonmember}}\",\n    \"vehicle_type\": \"motor\",\n    \"plate_number\": \"B 1234 ABC\",\n    \"stnk_verified\": true,\n    \"notes\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/staff/parking/exit", "host": ["{{base_url}}"], "path": ["staff", "parking", "exit"] }
+          }
+        },
+        {
+          "name": "Daftar Transaksi Parkir",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/staff/parking/transactions?visitor_type=&date_from=&date_to=",
+              "host": ["{{base_url}}"],
+              "path": ["staff", "parking", "transactions"],
+              "query": [
+                { "key": "visitor_type", "value": "", "description": "member atau non_member" },
+                { "key": "date_from", "value": "", "description": "Format: 2026-11-01" },
+                { "key": "date_to", "value": "", "description": "Format: 2026-11-30" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Invoice",
+      "item": [
+        {
+          "name": "Detail Invoice",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/staff/invoices/{{invoice_id}}", "host": ["{{base_url}}"], "path": ["staff", "invoices", "{{invoice_id}}"] }
+          }
+        },
+        {
+          "name": "Download Invoice PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/staff/invoices/{{invoice_id}}/pdf", "host": ["{{base_url}}"], "path": ["staff", "invoices", "{{invoice_id}}", "pdf"] }
+          }
+        },
+        {
+          "name": "[SECURITY] Petugas akses invoice petugas lain → 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/staff/invoices/999", "host": ["{{base_url}}"], "path": ["staff", "invoices", "999"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Reports",
+      "item": [
+        {
+          "name": "Laporan Petugas (milik sendiri)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/staff/reports?date_from=&date_to=&visitor_type=&vehicle_type=&search=",
+              "host": ["{{base_url}}"],
+              "path": ["staff", "reports"],
+              "query": [
+                { "key": "date_from", "value": "", "description": "Format: 2026-11-01" },
+                { "key": "date_to", "value": "", "description": "Format: 2026-11-30" },
+                { "key": "visitor_type", "value": "", "description": "member atau non_member" },
+                { "key": "vehicle_type", "value": "", "description": "motor, mobil, truk" },
+                { "key": "search", "value": "", "description": "Plat nomor atau nomor invoice" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export Laporan Petugas (Excel)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/staff/reports/export?date_from=&date_to=",
+              "host": ["{{base_url}}"],
+              "path": ["staff", "reports", "export"],
+              "query": [
+                { "key": "date_from", "value": "" },
+                { "key": "date_to", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Laporan Super Admin (semua petugas)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/reports?date_from=&date_to=&visitor_type=&vehicle_type=&staff_id=&search=",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "reports"],
+              "query": [
+                { "key": "date_from", "value": "" },
+                { "key": "date_to", "value": "" },
+                { "key": "visitor_type", "value": "" },
+                { "key": "vehicle_type", "value": "" },
+                { "key": "staff_id", "value": "", "description": "Filter per petugas" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export Laporan Super Admin (Excel)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/reports/export?date_from=&date_to=&staff_id=",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "reports", "export"],
+              "query": [
+                { "key": "date_from", "value": "" },
+                { "key": "date_to", "value": "" },
+                { "key": "staff_id", "value": "" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Security Tests",
+      "item": [
+        {
+          "name": "Guest akses endpoint petugas → 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/staff/members", "host": ["{{base_url}}"], "path": ["staff", "members"] }
+          }
+        },
+        {
+          "name": "Guest akses endpoint admin → 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/staff", "host": ["{{base_url}}"], "path": ["admin", "staff"] }
+          }
+        },
+        {
+          "name": "Token salah → 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer token-palsu-tidak-valid" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "Petugas akses laporan semua → 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/admin/reports", "host": ["{{base_url}}"], "path": ["admin", "reports"] }
+          }
+        }
+      ]
+    }
+  ]
+}
