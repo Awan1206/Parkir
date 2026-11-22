@@ -49,6 +49,7 @@ Route::prefix('staff')
         // Parking
         Route::post('parking/scan', [ParkingController::class, 'scan']);
         Route::post('parking/exit', [ParkingController::class, 'exit']);
+        Route::get('/parking/status', [ParkingController::class, 'status']);
         Route::get('parking/transactions', [ParkingController::class, 'transactions']);
         Route::post('parking/preview', [ParkingController::class, 'preview']);
 

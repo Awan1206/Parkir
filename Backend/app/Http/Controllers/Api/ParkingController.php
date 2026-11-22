@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Parking\ParkingExitRequest;
 use App\Http\Resources\ParkingTransactionResource;
 use App\Models\ParkingTransaction;
+use App\Models\MemberEntry;
+use App\Models\ParkingTicket;
 use App\Services\ParkingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -63,7 +65,7 @@ class ParkingController extends Controller
     {
         $request->validate([
             'qr_token'     => ['required', 'string'],
-            'vehicle_type' => ['required', 'in:motor,mobil,truck'],
+            'vehicle_type' => ['required', 'in:motor,mobil,truk'],
         ]);
 
         $result = $this->parkingService->previewExit($request->qr_token, $request->vehicle_type);
@@ -118,6 +120,79 @@ class ParkingController extends Controller
                 'current_page' => $query->currentPage(),
                 'last_page'    => $query->lastPage(),
                 'total'        => $query->total(),
+            ],
+        ]);
+    }
+
+    public function status(Request $request): JsonResponse
+    {
+        // Masih di dalam
+        $tickets = ParkingTicket::where('status', 'inside')
+            ->get(['ticket_code', 'entry_time']);
+
+        $memberEntries = MemberEntry::with('member:id,name,member_code')   // adjust model name
+            ->where('status', 'inside')
+            ->get();
+
+        $inside = $tickets->map(fn ($t) => [
+                'status'           => 'inside',
+                'visitor_type'     => 'non_member',
+                'name'             => 'Pengunjung',
+                'code'             => $t->ticket_code,
+                'plate_number'     => null,
+                'vehicle_type'     => null,
+                'entry_time'       => $t->entry_time->toDateTimeString(),
+                'exit_time'        => null,
+                'duration_minutes' => null,
+            ])
+            ->concat($memberEntries->map(fn ($e) => [
+                'status'           => 'inside',
+                'visitor_type'     => 'member',
+                'name'             => $e->member->name,
+                'code'             => $e->member->member_code,
+                'plate_number'     => null,
+                'vehicle_type'     => null,
+                'entry_time'       => $e->entry_time->toDateTimeString(),
+                'exit_time'        => null,
+                'duration_minutes' => null,
+            ]))
+            ->sortBy('entry_time'); // yang paling lama parkir di atas
+
+        // Sudah keluar hari ini
+        $exitedTx = ParkingTransaction::with('member:id,name,member_code')
+            ->whereDate('exit_time', today())
+            ->latest('exit_time')
+            ->get();
+
+        $ticketCodes = ParkingTicket::whereIn(
+            'id',
+            $exitedTx->pluck('parking_ticket_id')->filter()
+        )->pluck('ticket_code', 'id');
+
+        $exited = $exitedTx->map(fn ($t) => [
+            'status'           => 'exited',
+            'visitor_type'     => $t->visitor_type,
+            'name'             => $t->visitor_type === 'member' ? $t->member?->name : 'Pengunjung',
+            'code'             => $t->visitor_type === 'member'
+                                    ? $t->member?->member_code
+                                    : ($ticketCodes[$t->parking_ticket_id] ?? '-'),
+            'plate_number'     => $t->plate_number,
+            'vehicle_type'     => $t->vehicle_type,
+            'entry_time'       => $t->entry_time?->toDateTimeString(),
+            'exit_time'        => $t->exit_time->toDateTimeString(),
+            'duration_minutes' => $t->duration_minutes,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'summary' => [
+                    'inside_total'       => $inside->count(),
+                    'inside_members'     => $memberEntries->count(),
+                    'inside_non_members' => $tickets->count(),
+                    'exited_today'       => $exitedTx->count(),
+                ],
+                'vehicles' => $inside->concat($exited)->values(),
             ],
         ]);
     }
