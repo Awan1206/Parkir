@@ -10,6 +10,9 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
+  Bike,
+  Car,
+  Truck,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { publicService } from "@/services/public.service";
@@ -26,6 +29,87 @@ function formatDateTime(str) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+// ─── Auto return ─────────────────────────────────────────
+
+// lama tampil (detik) sebelum layar kembali otomatis
+const RESET_SECONDS = {
+  ticket: 5,
+  memberSuccess: 5,
+  memberError: 8,
+};
+
+function AutoReturn({ seconds, onDone }) {
+  const [left, setLeft] = useState(seconds);
+
+  useEffect(() => {
+    if (left <= 0) {
+      onDone();
+      return;
+    }
+    const t = setTimeout(() => setLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [left]);
+
+  return (
+    <div className="mt-5">
+      <div className="h-1 rounded-full bg-black/10 overflow-hidden">
+        <div
+          className="h-full bg-black/40 transition-all duration-1000 ease-linear"
+          style={{ width: `${(left / seconds) * 100}%` }}
+        />
+      </div>
+      <p className="text-xs text-gray-400 text-center mt-2">
+        Kembali otomatis dalam {left} detik
+      </p>
+    </div>
+  );
+}
+
+// ─── Tarif ────────────────────────────────────────────────
+
+const TARIF = [
+  { label: "Motor", price: 3000, icon: Bike },
+  { label: "Mobil", price: 5000, icon: Car },
+  { label: "Truk", price: 8000, icon: Truck },
+];
+
+function formatRupiah(amount) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(amount);
+}
+
+function TarifCatalog() {
+  return (
+    <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+      <h2 className="text-base font-semibold text-gray-900 mb-4">
+        Tarif Parkir
+      </h2>
+      <div className="grid grid-cols-3 gap-3">
+        {TARIF.map(({ label, price, icon: Icon }) => (
+          <div
+            key={label}
+            className="rounded-xl bg-gray-50 px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-3"
+          >
+            <div className="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center shrink-0">
+              <Icon size={20} className="text-gray-700" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">{label}</p>
+              <p className="text-base font-semibold text-gray-900 tabular-nums">
+                {formatRupiah(price)}
+                <span className="text-xs font-normal text-gray-500"> /jam</span>
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 // ─── Panel wrapper (kartu kiri / kanan) ──────────────────
@@ -131,6 +215,8 @@ function TicketResult({ ticket, onReset }) {
           Tiket Baru
         </button>
       </div>
+
+      <AutoReturn seconds={RESET_SECONDS.ticket} onDone={onReset} />
     </div>
   );
 }
@@ -332,6 +418,15 @@ function MemberPanel() {
             >
               ← Scan lagi
             </button>
+
+            <AutoReturn
+              seconds={
+                result.success
+                  ? RESET_SECONDS.memberSuccess
+                  : RESET_SECONDS.memberError
+              }
+              onDone={handleReset}
+            />
           </div>
         )}
 
@@ -403,17 +498,9 @@ function MemberPanel() {
 export default function ParkingPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 md:p-8">
-      <div className="w-full max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-900 rounded-xl mb-3">
-            <span className="text-white font-bold text-lg">P</span>
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900">ParkOps</h1>
-          <p className="text-sm text-gray-500">Sistem Manajemen Parkir</p>
-        </div>
+      <div className="w-full max-w-4xl space-y-6">
+        <TarifCatalog />
 
-        {/* Dua kolom: kiri non-member, kanan member */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           <NonMemberPanel />
           <MemberPanel />

@@ -15,6 +15,7 @@ import ReportsPage from "@/pages/admin/report/ReportPage";
 import StaffLayout from "@/layouts/StaffLayout";
 import StaffDashboardPage from "@/pages/petugas/DashboardPage";
 import MemberListPage from "@/pages/petugas/member/MemberList";
+import ParkingStatusPage from "@/pages/petugas/parking/ParkingStatusPage";
 import TransactionPage from "@/pages/petugas/transactions/TransactionPage";
 import StaffReportPage from "@/pages/petugas/reports/ReportPage";
 
@@ -62,6 +63,7 @@ export default function AppRoutes() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<StaffDashboardPage />} />
           <Route path="members" element={<MemberListPage />} />
+          <Route path="parking" element={<ParkingStatusPage />} />
           <Route path="transactions" element={<TransactionPage />} />
           <Route path="reports" element={<StaffReportPage />} />
         </Route>

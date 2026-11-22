@@ -406,7 +406,7 @@ function ExitForm({ scanResult, qrToken, onSuccess, onReset }) {
           >
             <option value="motor">Motor</option>
             <option value="mobil">Mobil</option>
-            <option value="truck">Truck</option>
+            <option value="truk">Truk</option>
           </select>
         </Field>
 

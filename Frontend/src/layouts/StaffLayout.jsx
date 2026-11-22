@@ -6,6 +6,7 @@ import {
   FileText,
   LogOut,
   User,
+  ParkingSquare,
 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -22,6 +23,7 @@ import {
 const navItems = [
   { to: "/staff/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/staff/members", icon: Users, label: "Kelola Member" },
+  { to: "/staff/parking", icon: ParkingSquare, label: "Kelola Parkir" },
   { to: "/staff/transactions", icon: ScanLine, label: "Transaksi Parkir" },
   { to: "/staff/reports", icon: FileText, label: "Laporan" },
 ];

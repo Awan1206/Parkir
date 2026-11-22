@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Download, X } from "lucide-react";
+import { toast } from "sonner";
 import { reportsService } from "@/services/reports.service";
 
 const INITIAL_FILTERS = {
@@ -52,6 +53,17 @@ function formatTime(iso) {
     minute: "2-digit",
     timeZone: "Asia/Jakarta",
   }).format(new Date(iso));
+}
+
+function downloadBlob(blob, filename) {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
 }
 
 const inputClass =
@@ -137,6 +149,7 @@ function TransactionRow({ trx }) {
 export default function ReportsPage() {
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [page, setPage] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { data, isPending, isError, isFetching } = useQuery({
     queryKey: ["admin-reports", filters, page],
@@ -171,16 +184,54 @@ export default function ReportsPage() {
 
   const hasFilter = Object.values(filters).some((v) => v !== "");
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      // filter yang sama, tanpa page
+      const params = Object.fromEntries(
+        Object.entries(filters).filter(([, v]) => v !== ""),
+      );
+      const res = await reportsService.exportAdminReports(params);
+
+      // ambil nama file dari header backend, kalau ada
+      const disposition = res.headers?.["content-disposition"] ?? "";
+      const match = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+      const filename = match
+        ? decodeURIComponent(match[1])
+        : `laporan-transaksi-${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+      downloadBlob(res.data, filename);
+    } catch {
+      toast.error("Gagal mengekspor laporan.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6 lg:p-10 flex flex-col gap-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-          Laporan
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Riwayat transaksi parkir yang sudah selesai.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+            Laporan
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Riwayat transaksi parkir yang sudah selesai.
+          </p>
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={isExporting || rows.length === 0}
+          className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+        >
+          {isExporting ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Download size={16} />
+          )}
+          Export Excel
+        </button>
       </div>
 
       {/* Ringkasan */}
@@ -208,7 +259,7 @@ export default function ReportsPage() {
             <input
               type="date"
               value={filters.date_from}
-              max={filters.to || undefined}
+              max={filters.date_to || undefined}
               onChange={setFilter("date_from")}
               className={inputClass}
             />
@@ -217,7 +268,7 @@ export default function ReportsPage() {
             <input
               type="date"
               value={filters.date_to}
-              min={filters.from || undefined}
+              min={filters.date_from || undefined}
               onChange={setFilter("date_to")}
               className={inputClass}
             />
@@ -252,14 +303,16 @@ export default function ReportsPage() {
               ))}
             </div>
 
-            {/* {hasFilter && (
+            {hasFilter && (
               <button
                 onClick={resetFilters}
-                className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                title="Reset filter"
+                aria-label="Reset filter"
+                className="p-2.5 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-red-500 transition-colors"
               >
-                Reset
+                <X size={18} />
               </button>
-            )} */}
+            )}
             {isFetching && !isPending && (
               <Loader2 size={16} className="animate-spin text-gray-400" />
             )}
@@ -331,6 +384,7 @@ export default function ReportsPage() {
               <button
                 onClick={() => setPage((p) => p - 1)}
                 disabled={meta.current_page <= 1}
+                aria-label="Halaman sebelumnya"
                 className="flex items-center gap-1 pl-2.5 pr-3.5 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={16} />
@@ -338,6 +392,7 @@ export default function ReportsPage() {
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={meta.current_page >= meta.last_page}
+                aria-label="Halaman berikutnya"
                 className="flex items-center gap-1 pl-3.5 pr-2.5 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight size={16} />
